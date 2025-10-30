@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ipconfig</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#00ADB5', // צבע טורקיז 
+                        'secondary': '#393E46', // רקע כהה משני
+                        'background': '#222831', // רקע כהה ראשי
+                        'text-light': '#EEEEEE', // טקסט בהיר
+                    },
+                    fontFamily: {
+                        sans: ['Rubik', 'Inter', 'Arial', 'sans-serif'], 
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Rubik', sans-serif;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        #glossary-content.hidden {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        #glossary-content {
+            transition: max-height 0.5s ease-in-out, opacity 0.4s ease;
+        }
+        .platform-guide ol {
+            direction: ltr;
+        }
+        .platform-guide ol li {
+            direction: rtl; 
+            padding-right: 0.5rem; 
+        }
+        .tab-active {
+            border-bottom-color: #00ADB5 !important;
+            color: #00ADB5 !important;
+        }
+        .tool-button {
+            padding-top: 0.75rem; /* py-3 */
+            padding-bottom: 0.75rem; /* py-3 */
+            padding-left: 1.5rem; /* px-6 */
+            padding-right: 1.5rem; /* px-6 */
+        }
+    </style>
+</head>
+<body class="bg-background text-text-light flex flex-col min-h-screen">
+
+    <div id="message-box" class="fixed bottom-[-60px] right-4 p-3 rounded-lg shadow-xl text-sm transition-all duration-300 transform translate-y-full opacity-0 z-50"></div>
+
+    <header class="p-4 border-b border-secondary/50 shadow-lg sticky top-0 bg-background/95 backdrop-blur-sm z-10">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <!-- התאם את הלוגו או הטקסט שלך כאן -->
+            <div class="text-2xl font-bold text-primary">
+                ⚡ פרטיקס (Prtix)
+            </div>
+            <nav>
+                <a href="#glossary" class="text-text-light hover:text-primary transition-colors text-sm md:text-base">מונחים</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Body -->
+    <main class="flex-grow container mx-auto p-4 md:p-8">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-center mb-10 text-primary">
+            ניתוח פרטי הרשת והמכשיר
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+            
+            <div class="md:col-span-2 card bg-secondary p-6 rounded-xl shadow-2xl border-2 border-primary/50">
+                <div class="flex items-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9V3"/>
+                    </svg>
+                    <h2 class="text-3xl font-bold text-text-light">כתובת IP ציבורית</h2>
+                </div>
+                
+                <div class="flex items-center justify-between mb-4 pb-2 border-b border-primary/20">
+                    <p class="text-5xl md:text-6xl font-mono break-words text-primary flex items-end">
+                        <span id="public-ip-v4" class="animate-pulse">טוען...</span>
+                        <span class="text-2xl font-normal ml-2 mb-1 opacity-70">(IPv4)</span> 
+                    </p>
+                    <button onclick="copyIP('v4')" id="copy-button-v4" class="flex-shrink-0 bg-primary/20 hover:bg-primary/40 text-primary font-bold p-3 rounded-full transition duration-150 mr-4 disabled:opacity-50" disabled>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="bg-gray-800/70 p-4 rounded-xl shadow-inner border-l-4 border-cyan-400 mt-2">
+                    <div class="flex justify-between items-center text-sm text-text-light/80 mb-2">
+                        <span class="font-medium text-cyan-400 flex items-center">
+                            🚀 כתובת IPv6 ציבורית
+                        </span>
+                        <button onclick="copyIP('v6')" id="copy-button-v6" class="ml-2 text-cyan-400 hover:text-white disabled:opacity-50 transition-colors" disabled>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <p id="public-ip-v6" class="text-base text-yellow-300 break-words mt-1 select-all">
+                        בודק זמינות IPv6...
+                    </p>
+                </div>
+
+                <p class="mt-4 text-sm text-text-light/70">זו הכתובת שבה האינטרנט "רואה" אותך. <strong class="text-red-400">אינה כתובת ה-IP הפנימית.</strong></p>
+                
+                <div class="mt-4 pt-4 border-t border-secondary/50">
+                    <span class="block text-primary/80">🏠 IP פנימית (LAN):</span>
+                    <p class="text-sm text-yellow-300 mt-1 font-medium">
+                        לא ניתן לזהות ישירות. <a href="#internal-ip-guide" class="text-primary hover:underline font-bold">לחץ כאן למדריך המלא</a>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card bg-secondary p-6 rounded-xl shadow-2xl border border-secondary/70">
+                <h2 class="text-xl font-bold mb-4 text-primary">מידע גיאוגרפי וספק</h2>
+                <ul class="space-y-3 text-lg mb-4 pb-4 border-b border-primary/20">
+                    <li class="flex justify-between items-center pb-2">
+                        <span>🌍 מיקום משוער:</span>
+                        <span id="city-country" class="font-semibold text-text-light">טוען...</span>
+                    </li>
+                    <li class="flex justify-between items-center pb-2">
+                        <span>📍 קוד מדינה:</span>
+                        <span id="country-code" class="font-semibold text-text-light">טוען...</span>
+                    </li>
+                    <li class="flex justify-between items-center">
+                        <span>📡 ספק שירות (ISP):</span>
+                        <!-- הוספת class `isp-text` שתעודכן ב-JS ליישור לשמאל -->
+                        <span id="isp" class="font-semibold text-text-light break-words">טוען...</span>
+                    </li>
+                </ul>
+                <button onclick="loadNetworkInfo()" id="refresh-button" class="bg-secondary/50 hover:bg-secondary/80 text-text-light font-bold py-2 px-4 rounded-lg transition duration-300 w-full text-sm mt-2 disabled:opacity-50" disabled>
+                    <span class="flex items-center justify-center">🔁 רענן פרטי IP ומיקום</span>
+                </button>
+            </div>
+            
+            <div class="card bg-secondary p-6 rounded-xl shadow-2xl border border-secondary/70">
+                <h2 class="text-xl font-bold mb-4 text-primary">פרטי מכשיר (קליינט)</h2>
+                <ul class="space-y-3 text-lg">
+                    <li class="flex justify-between items-center border-b border-secondary/50 pb-2">
+                        <span>🖥️ מערכת הפעלה:</span>
+                        <span id="platform" class="font-semibold text-text-light">טוען...</span>
+                    </li>
+                    <li class="flex justify-between items-center border-b border-secondary/50 pb-2">
+                        <span>🌐 שם דפדפן:</span>
+                        <span id="browser-name" class="font-semibold text-text-light">טוען...</span>
+                    </li>
+                    <li class="flex flex-col items-start pt-2">
+                        <span class="text-text-light/90 pb-1">🧪 סוכן משתמש:</span>
+                        <!-- הוספת direction: ltr ו-text-left ליישור לשמאל -->
+                        <span id="user-agent" class="text-sm font-mono text-text-light break-words w-full text-left" style="direction: ltr;">טוען...</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card bg-secondary p-6 rounded-xl shadow-2xl border border-secondary/70">
+                <h2 class="text-xl font-bold mb-4 text-primary">🔗 כלי עזר והורדות</h2>
+                <div class="space-y-4">
+                    <a href="https://anydesk.com/en/downloads" target="_blank" class="flex items-center justify-between bg-primary/20 p-3 rounded-lg hover:bg-primary/40 transition-colors">
+                        <span class="font-semibold text-text-light">AnyDesk (תמיכה מרחוק)</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/></svg>
+                    </a>
+                    <a href="https://www.advanced-ip-scanner.com/download/" target="_blank" class="flex items-center justify-between bg-primary/20 p-3 rounded-lg hover:bg-primary/40 transition-colors">
+                        <span class="font-semibold text-text-light">Advanced IP Scanner (הורדה ישירה)</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2.586l.293.293A1 1 0 009 15.586V17a1 1 0 001 1h2a1 1 0 001-1v-4.586l.293.293A1 1 0 0014 13.586V17a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"/></svg>
+                    </a>
+                </div>
+            </div>
+
+            <div class="card bg-secondary p-6 rounded-xl shadow-2xl border border-secondary/70">
+                <h2 class="text-xl font-bold mb-4 text-primary">📊 כלי בדיקת רשת</h2>
+                
+                <p class="text-sm text-text-light/70 mb-3">בדיקת מהירות התגובה (Ping) לשרת DNS גלובלי (1.1.1.1).</p>
+                
+                <button onclick="runLatencyTest()" id="latency-button" class="tool-button bg-primary hover:bg-opacity-80 text-background font-bold rounded-lg transition duration-300 transform hover:scale-105 w-full flex items-center justify-center disabled:opacity-50 mb-4">
+                    <span id="latency-text">הפעל בדיקת פינג (1.1.1.1)</span> 
+                    <svg id="latency-icon" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </button>
+                
+                <div class="mt-4 pt-4 border-t border-secondary/50">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="font-semibold text-text-light">Cloudflare (1.1.1.1):</span>
+                        <span id="latency-result" class="font-mono text-xl text-yellow-300">--</span> 
+                    </div>
+                    <a href="https://www.speedtest.net/" target="_blank" class="tool-button bg-red-600 hover:bg-red-700 text-text-light font-bold rounded-lg transition duration-300 w-full text-center block text-sm">
+                        🚀 בדיקת מהירות מלאה (OOKLA)
+                    </a>
+                </div>
+            </div>
+
+
+            <div id="internal-ip-guide" class="md:col-span-3 card bg-secondary p-6 rounded-xl shadow-2xl border border-primary/50 mt-6">
+                <h2 class="text-2xl font-bold mb-4 text-primary flex items-center">
+                    🔎 מדריך: מציאת כתובת ה-IP הפנימית (LAN)
+                </h2>
+                <p class="mb-4 text-text-light/80">
+                    כתובת ה-IP הפנימית שלך נחוצה כדי לגשת להגדרות הנתב או להתחבר למכשירים מקומיים. כתובות אלו מתחילות בדרך כלל ב-
+                    <strong class="text-yellow-300">192.168</strong>, <strong class="text-yellow-300">172.16-31</strong>, או <strong class="text-yellow-300">10.0.0</strong>. הדרך המדויקת למצוא אותה היא באמצעות שורת הפקודה:
+                </p>
+                
+                <div class="flex border-b border-primary/50 mb-6">
+                    <button id="tab-win" onclick="showGuide('win')" class="px-4 py-2 text-lg font-semibold border-b-2 border-transparent transition-colors duration-200 tab-active">
+                        🖥️ Windows (CMD)
+                    </button>
+                    <button id="tab-mac" onclick="showGuide('mac')" class="px-4 py-2 text-lg font-semibold text-text-light/70 hover:text-primary transition-colors duration-200 border-b-2 border-transparent">
+                        🍎 macOS (Terminal)
+                    </button>
+                </div>
+                
+                <div id="win-guide" class="guide-content grid grid-cols-1 md:grid-cols-2 gap-6" style="display: grid;">
+                    <div class="bg-background p-4 rounded-lg">
+                        <h3 class="font-bold text-lg text-primary/80 mb-2">שלב 1: פתיחת שורת הפקודה (CMD)</h3>
+                        <ol class="list-decimal list-inside space-y-3 text-text-light platform-guide">
+                            <li>לחץ על כפתור <strong class="text-yellow-300">התחל/Windows</strong>.</li>
+                            <li>הקלד <strong class="font-mono bg-secondary/50 p-0.5 rounded">CMD</strong> בשורת החיפוש.</li>
+                            <li>לחץ על התוצאה <strong class="text-yellow-300">שורת הפקודה</strong> (Command Prompt) כדי לפתוח חלון שחור.</li>
+                        </ol>
+
+                        <h3 class="font-bold text-lg text-primary/80 mt-4 mb-2">שלב 2: הפעלת הפקודה</h3>
+                        <div class="bg-gray-800 p-3 rounded-lg font-mono text-lg text-green-400 select-all">
+                            ipconfig
+                        </div>
+                        <p class="text-sm text-text-light/60 mt-2">הקלד את הפקודה ולחץ Enter.</p>
+                    </div>
+
+                    <div class="bg-background p-4 rounded-lg">
+                        <h3 class="font-bold text-lg text-primary/80 mb-2">שלב 3: זיהוי הכתובת הנכונה</h3>
+                        <p class="text-text-light mb-3">חפש את הכותרת הרלוונטית לחיבור שלך:</p>
+                        
+                        <ul class="space-y-4">
+                            <li class="p-3 bg-secondary rounded-lg border-r-4 border-cyan-400">
+                                <strong class="text-cyan-400">🔌 אם אתה מחובר עם כבל (קווי):</strong> 
+                                <br>חפש תחת <span class="font-mono">Ethernet adapter</span>.
+                            </li>
+                            <li class="p-3 bg-secondary rounded-lg border-r-4 border-cyan-400">
+                                <strong class="text-cyan-400">📶 אם אתה מחובר עם Wi-Fi (אלחוטי):</strong> 
+                                <br>חפש תחת <span class="font-mono">Wireless LAN adapter Wi-Fi</span>.
+                            </li>
+                        </ul>
+
+                        <p class="mt-4 text-sm text-text-light/60">
+                            הכתובת שאתה מחפש היא הערך המופיע ליד <strong class="text-yellow-300">IPv4 Address</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <div id="mac-guide" class="guide-content grid grid-cols-1 md:grid-cols-2 gap-6" style="display: none;">
+                    <div class="bg-background p-4 rounded-lg">
+                        <h3 class="font-bold text-lg text-primary/80 mb-2">שלב 1: פתיחת הטרמינל (Terminal)</h3>
+                        <ol class="list-decimal list-inside space-y-3 text-text-light platform-guide">
+                            <li>לחץ על <strong class="text-yellow-300">Command + Space</strong> כדי לפתוח את Spotlight.</li>
+                            <li>הקלד <strong class="font-mono bg-secondary/50 p-0.5 rounded">Terminal</strong> בשורת החיפוש.</li>
+                            <li>לחץ Enter כדי לפתוח את החלון השחור.</li>
+                        </ol>
+
+                        <h3 class="font-bold text-lg text-primary/80 mt-4 mb-2">שלב 2: הפעלת הפקודה</h3>
+                        <div class="bg-gray-800 p-3 rounded-lg font-mono text-lg text-green-400 select-all">
+                            ifconfig
+                        </div>
+                        <p class="text-sm text-text-light/60 mt-2">הקלד את הפקודה ולחץ Return/Enter.</p>
+                    </div>
+
+                    <div class="bg-background p-4 rounded-lg">
+                        <h3 class="font-bold text-lg text-primary/80 mb-2">שלב 3: זיהוי הכתובת הנכונה</h3>
+                        <p class="text-text-light mb-3">חפש את שם הממשק הרלוונטי:</p>
+                        
+                        <ul class="space-y-4">
+                            <li class="p-3 bg-secondary rounded-lg border-r-4 border-cyan-400">
+                                <strong class="text-cyan-400">🔌 אם אתה מחובר עם כבל (קווי):</strong> 
+                                <br>חפש תחת <span class="font-mono">en0</span> או <span class="font-mono">en1</span>.
+                            </li>
+                            <li class="p-3 bg-secondary rounded-lg border-r-4 border-cyan-400">
+                                <strong class="text-cyan-400">📶 אם אתה מחובר עם Wi-Fi (אלחוטי):</strong> 
+                                <br>חפש תחת <span class="font-mono">en0</span>, <span class="font-mono">en1</span> או תחת השם של מתאם ה-Wi-Fi.
+                            </li>
+                        </ul>
+
+                        <p class="mt-4 text-sm text-text-light/60">
+                            הכתובת שאתה מחפש היא הערך המופיע ליד <strong class="text-yellow-300">inet</strong> תחת הממשק הנכון.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        
+        <div class="max-w-7xl mx-auto bg-yellow-600/20 text-yellow-300 p-4 mt-8 rounded-lg border-r-4 border-yellow-500 shadow-xl">
+            <p class="text-lg font-medium">⚠️ הצגת הנתונים: המידע מוצג ישירות בדפדפן שלך. כתובות ה-IP הציבוריות נשלפות באמצעות פנייה לשירותי API ציבוריים, ואינן נשמרות או נשלחות לשום מקום אחר.</p>
+        </div>
+
+        <div id="glossary" class="max-w-7xl mx-auto mt-10 p-6 bg-secondary rounded-xl shadow-2xl border border-secondary/70">
+            <button onclick="toggleGlossary()" class="w-full text-right flex justify-between items-center text-xl font-bold text-primary hover:text-primary/80 transition-colors">
+                <span>📘 מונחי רשת נפוצים (לחץ להרחבה)</span>
+                <svg id="glossary-arrow" class="w-6 h-6 transform transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            
+            <div id="glossary-content" class="hidden mt-4 pt-4 border-t border-secondary/50">
+                <div class="space-y-6 text-text-light/90">
+                    <div>
+                        <h3 class="font-bold text-lg text-primary/80">כתובת IP ציבורית (Public IP)</h3>
+                        <p class="mt-1">הכתובת הייחודית שספק האינטרנט שלך (ISP) מקצה לנתב שלך, המאפשרת למכשירים שלך לתקשר עם העולם החיצון (אתרים, שרתים). זו הכתובת שבה "רואים" אותך ברשת העולמית.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-primary/80">IPv4 (Internet Protocol version 4)</h3>
+                        <p class="mt-1">הגרסה הנפוצה ביותר של כתובות IP, המשתמשת בפורמט של ארבעה מספרים המופרדים בנקודות (למשל, 192.168.1.1). עקב מחסור בכתובות פנויות, היא מוחלפת בהדרגה על ידי IPv6.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-primary/80">IPv6 (Internet Protocol version 6)</h3>
+                        <p class="mt-1">הדור החדש של כתובות IP, המשתמש בפורמט ארוך יותר של ספרות ואותיות המופרדות בנקודותיים, ומציע כמות עצומה של כתובות (למשל, 2001:0db8:85a3:0000:0000:8a2e:0370:7334).</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-primary/80">כתובת IP פנימית (Private IP)</h3>
+                        <p class="mt-1">כתובת המשמשת לזיהוי מכשירים בתוך הרשת המקומית שלך (LAN). היא נחוצה לתקשורת פנימית ואינה גלויה מחוץ לבית או למשרד.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-primary/80">Default Gateway (שער ברירת מחדל)</h3>
+                        <p class="mt-1">זו כתובת ה-IP הפנימית של הנתב (Router) שלך. כל תעבורה שצריכה לצאת מהרשת המקומית שלך לאינטרנט עוברת דרך כתובת זו תחילה. בדרך כלל זו הכתובת הראשונה בטווח (כמו 192.168.1.1). לרוב ה-Gateway משמש גם כשרת DHCP.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-primary/80">DNS (Domain Name System)</h3>
+                        <p class="mt-1">המערכת המתרגמת שמות אתרים (כמו `google.com`) לכתובות IP מספריות (כמו `142.250.68.238`). זהו מנגנון קריטי שמאפשר לדפדפן שלך למצוא את השרת הנכון. 1.1.1.1 ו-8.8.8.8 הם שרתי DNS ציבוריים פופולריים.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-primary/80">VPN (Virtual Private Network)</h3>
+                        <p class="mt-1">רשת פרטית וירטואלית. VPN יוצר מנהרה מוצפנת בין המכשיר שלך לשרת מרוחק, ומנתב את כל התעבורה שלך דרכו. התוצאה היא שכתובת ה-IP הציבורית המוצגת היא הכתובת של שרת ה-VPN, מה שמקנה פרטיות ואנונימיות.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-primary/80">Latency (זמן השהיה / לאטנסי)</h3>
+                        <p class="mt-1">משך הזמן שלוקח לחבילת נתונים קטנה לעבור מהמכשיר שלך לשרת מרוחק ולחזור אליך (Ping). זמן השהיה נמוך (פחות מ-50ms) חיוני לחוויית גיימינג ושיחות וידאו חלקה.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg text-primary/80">Bandwidth (רוחב פס)</h3>
+                        <p class="mt-1">היכולת המקסימלית של חיבור הרשת שלך להעביר נתונים בפרק זמן נתון, הנמדדת במגה-ביטים לשנייה (Mbps). רוחב פס קובע את מהירות ההורדה והעלאה המקסימלית.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-secondary/70 p-4 border-t border-secondary/50 mt-10">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-text-light/70">
+            <p>&copy; 2025 הפרטים שלי. כל הזכויות שמורות.</p>
+            <nav class="space-x-4 space-x-reverse mt-2 md:mt-0">
+                <!-- התאם את הקישורים שלך כאן -->
+                <a href="#" class="hover:text-primary transition-colors">מדיניות פרטיות</a>
+                <a href="#" class="hover:text-primary transition-colors">תנאי שימוש</a>
+                <a href="#" class="hover:text-primary transition-colors">צור קשר</a>
+            </nav>
+        </div>
+    </footer>
+
+    <script>
+        // כתובת API ציבורית לקבלת פרטי IP גלובליים ומיקום (עבור IPv4/ראשי)
+        const API_URL_V4 = 'https://ipinfo.io/json';
+        // כתובת API ציבורית לקבלת פרטי IPv6
+        const API_URL_V6 = 'https://api6.ipify.org?format=json';
+
+        /**
+         * פונקציה להצגת הודעות קופצות למשתמש
+         * @param {string} msg - הטקסט להצגה
+         * @param {string} type - 'success' או 'error'
+         */
+        function showMessage(msg, type) {
+            const messageBox = document.getElementById('message-box');
+            messageBox.textContent = msg;
+            
+            // איפוס סגנונות קודמים והגדרת חדשים
+            messageBox.className = `fixed bottom-[-60px] right-4 p-3 rounded-lg shadow-xl text-sm transition-all duration-300 transform opacity-0 z-50`;
+            
+            // הגדרת סגנון לפי סוג
+            const baseClasses = 'fixed bottom-4 right-4 p-3 rounded-lg shadow-xl text-sm transition-all duration-300 transform translate-y-0 opacity-100 z-50';
+            const typeClasses = type === 'success' ? 'bg-green-600 text-white' : 'bg-red-600 text-white';
+            
+            messageBox.className = `${baseClasses} ${typeClasses}`;
+
+            // הסתרת ההודעה לאחר 3 שניות
+            setTimeout(() => {
+                messageBox.classList.remove('translate-y-0', 'opacity-100');
+                messageBox.classList.add('translate-y-full', 'opacity-0');
+            }, 3000);
+        }
+
+        /**
+         * מעתיק את כתובת ה-IP הציבורית ללוח
+         * @param {string} version - 'v4' או 'v6'
+         */
+        function copyIP(version) {
+            const elementId = version === 'v6' ? 'public-ip-v6' : 'public-ip-v4';
+            const ipElement = document.getElementById(elementId);
+            const ip = ipElement.textContent;
+            
+            const forbiddenTexts = ['טוען...', 'שגיאה בטעינה (API)', 'בודק זמינות IPv6...', '😥 כתובת IPv6 ציבורית אינה זמינה (ייתכן שהרשת אינה תומכת).', 'לא נמצא'];
+
+            if (forbiddenTexts.includes(ip) || ip.length < 7) { // 7 הוא אורך מינימלי ל-IPV4 חוקי
+                showMessage(`ה-IP (${version}) עדיין לא נטען או אינו זמין.`, 'error');
+                return;
+            }
+            
+            const tempInput = document.createElement('input');
+            tempInput.value = ip;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            
+            try {
+                // שימוש ב-document.execCommand('copy') ליתר ביטחון בסביבות IFrame
+                document.execCommand('copy');
+                showMessage(`כתובת ה-${version.toUpperCase()} הועתקה ללוח!`, 'success');
+            } catch (err) {
+                console.error('Copy failed:', err);
+                showMessage('שגיאה בהעתקה.', 'error');
+            }
+            
+            document.body.removeChild(tempInput);
+        }
+
+        /**
+         * פונקציה פנימית לביצוע בדיקת השהיה לשרת יעד נתון
+         * @param {string} targetUrl - כתובת URL של שרת היעד (לדוגמה, https://1.1.1.1/cdn-cgi/trace)
+         * @returns {Promise<string>} - זמן ההשהיה ב-ms או הודעת שגיאה
+         */
+        async function checkLatency(targetUrl) {
+            const startTime = performance.now();
+            try {
+                // שימוש ב-no-cache כדי למנוע שמירת תגובה קודמת
+                const response = await fetch(targetUrl, {
+                    method: 'GET',
+                    cache: 'no-store' 
+                });
+                
+                // השרת של 1.1.1.1 מחזיר 200 OK עם טקסט, ה-fetch מצליח.
+                if (!response.ok) throw new Error('שרת היעד לא הגיב כצפוי');
+
+                const endTime = performance.now();
+                const latency = (endTime - startTime).toFixed(0); 
+                return `${latency}ms`;
+
+            } catch (error) {
+                console.error(`שגיאה בבדיקת Latency ל-${targetUrl}:`, error);
+                return 'כשל בבדיקה';
+            }
+        }
+
+        /**
+         * מפעיל בדיקת השהיה לשרת Cloudflare (1.1.1.1) בלבד.
+         */
+        async function runLatencyTest() {
+            const button = document.getElementById('latency-button');
+            const resultDisplay = document.getElementById('latency-result');
+            const originalText = 'הפעל בדיקת פינג (1.1.1.1)'; // טקסט ברירת המחדל
+
+            // 1. מצב טעינה
+            button.disabled = true;
+            button.classList.add('opacity-50');
+            document.getElementById('latency-text').textContent = 'מבצע בדיקה...';
+            // מציג סימון טעינה
+            resultDisplay.textContent = '...'; 
+            
+            // 2. הפעלת הבדיקה
+            const target = 'https://1.1.1.1/cdn-cgi/trace';
+            const result = await checkLatency(target);
+
+            // 3. עדכון תוצאות
+            resultDisplay.textContent = result;
+            
+            // 4. סיום מצב טעינה (הכפתור חוזר למצב לחיץ אם המשתמש ירצה לרענן)
+            button.disabled = false;
+            button.classList.remove('opacity-50');
+            document.getElementById('latency-text').textContent = originalText;
+        }
+        
+        /**
+         * מנסה לשלוף את כתובת ה-IPv6 הציבורית באמצעות API ייעודי.
+         */
+        async function getPublicIPv6() {
+            const v6Display = document.getElementById('public-ip-v6');
+            const copyButton = document.getElementById('copy-button-v6');
+            
+            // הגדרת מצב טעינה
+            v6Display.textContent = 'בודק זמינות IPv6...';
+            // הסרת כל צבע קודם והגדרת צהוב לאזהרה/טעינה
+            v6Display.classList.remove('text-red-400', 'text-cyan-400');
+            v6Display.classList.add('text-yellow-300');
+            copyButton.disabled = true;
+            
+            try {
+                const response = await fetch(API_URL_V6);
+                
+                if (!response.ok) throw new Error('IPv6 API failed');
+                
+                const data = await response.json();
+                
+                // בדיקה אם ה-IP שהוחזר הוא אכן IPv6
+                if (data.ip && data.ip.includes(':')) {
+                    v6Display.textContent = data.ip;
+                    copyButton.disabled = false;
+                    // הצלחה - שימוש בצבע תואם לנושא (cyan-400)
+                    v6Display.classList.remove('text-yellow-300', 'text-red-400'); 
+                    v6Display.classList.add('text-cyan-400'); 
+                } else {
+                    v6Display.textContent = '😥 כתובת IPv6 ציבורית אינה זמינה (ייתכן שהרשת אינה תומכת).';
+                    copyButton.disabled = true;
+                    // שגיאה - שימוש בצבע אדום
+                    v6Display.classList.remove('text-yellow-300', 'text-cyan-400'); 
+                    v6Display.classList.add('text-red-400'); 
+                }
+                
+            } catch (error) {
+                // כשל כאן לרוב מעיד על כך שהרשת המקומית אינה תומכת ב-IPv6
+                v6Display.textContent = '😥 כתובת IPv6 ציבורית אינה זמינה (ייתכן שהרשת אינה תומכת).';
+                copyButton.disabled = true;
+                // שגיאה - שימוש בצבע אדום
+                v6Display.classList.remove('text-yellow-300', 'text-cyan-400');
+                v6Display.classList.add('text-red-400');
+                console.warn("Failed to retrieve IPv6 (expected if network does not support it):", error);
+            }
+        }
+
+
+        /**
+         * טוען ומציג את פרטי הרשת והקליינט (דפדפן)
+         */
+        async function loadNetworkInfo() {
+            // 1. הגדרת מצב טעינה לכל השדות הסטטיים
+            const staticPlaceholders = document.querySelectorAll('#public-ip-v4, #city-country, #country-code, #isp, #platform, #browser-name, #user-agent');
+            staticPlaceholders.forEach(el => el.textContent = 'טוען...');
+            document.getElementById('public-ip-v4').classList.add('animate-pulse');
+            document.getElementById('refresh-button').disabled = true;
+            document.getElementById('copy-button-v4').disabled = true;
+            document.getElementById('copy-button-v6').disabled = true; 
+
+            // איפוס יישור ISP
+            const ispElement = document.getElementById('isp');
+            ispElement.style.direction = 'rtl';
+            ispElement.style.textAlign = 'right';
+
+            // 2. קבלת פרטי IP ציבורי (IPv4) ומיקום (שימוש ב-ipinfo.io)
+            try {
+                const response = await fetch(API_URL_V4);
+                if (!response.ok) throw new Error('API failed');
+                
+                const data = await response.json();
+                
+                // עדכון DOM עם נתוני הרשת - IPv4
+                document.getElementById('public-ip-v4').textContent = data.ip || 'לא נמצא';
+                document.getElementById('copy-button-v4').disabled = false;
+                
+                // עדכון פרטי מיקום וספק
+                const location = data.city || data.region || 'לא ידוע'; 
+                document.getElementById('city-country').textContent = `${location}, ${data.country || 'לא ידוע'}`;
+                document.getElementById('country-code').textContent = data.country || 'N/A';
+                
+                // עדכון ספק שירות (ISP)
+                const ispText = data.org || data.hostname || 'לא ידוע';
+                ispElement.textContent = ispText;
+
+                // ** לוגיקת יישור ISP לשמאל אם הוא באנגלית **
+                // בדיקה פשוטה לנוכחות תווים לטיניים
+                if (/[a-zA-Z]/.test(ispText)) {
+                    ispElement.style.direction = 'ltr';
+                    ispElement.style.textAlign = 'left';
+                }
+                
+            } catch (error) {
+                console.error("שגיאה בטעינת פרטי רשת:", error);
+                const errorText = 'שגיאה בטעינה (API)';
+                document.getElementById('public-ip-v4').textContent = errorText;
+                document.getElementById('city-country').textContent = errorText;
+                document.getElementById('country-code').textContent = errorText;
+                document.getElementById('isp').textContent = errorText;
+            }
+
+            // 3. קבלת פרטי IPv6 (מבוצע בנפרד)
+            await getPublicIPv6();
+
+
+            // 4. קבלת פרטי דפדפן ומערכת הפעלה (מתוך אובייקט navigator המקומי)
+            try {
+                const userAgent = navigator.userAgent;
+                let browserName = "לא ידוע";
+                const platformName = navigator.platform || 'לא ידוע';
+                
+                // לוגיקה פשוטה לזיהוי הדפדפן
+                if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+                    browserName = "Google Chrome";
+                } else if (userAgent.includes("Firefox")) {
+                    browserName = "Mozilla Firefox";
+                } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+                    browserName = "Safari";
+                } else if (userAgent.includes("Edg")) {
+                    browserName = "Microsoft Edge";
+                } else if (userAgent.includes("MSIE") || userAgent.includes("Trident")) {
+                    browserName = "Internet Explorer";
+                } else if (userAgent.includes("Mobile")) {
+                    browserName += " (נייד)";
+                }
+
+                document.getElementById('platform').textContent = platformName;
+                document.getElementById('browser-name').textContent = browserName;
+                document.getElementById('user-agent').textContent = userAgent;
+
+            } catch (error) {
+                console.error("שגיאה בטעינת פרטי קליינט:", error);
+                document.getElementById('platform').textContent = 'שגיאה';
+                document.getElementById('browser-name').textContent = 'שגיאה';
+                document.getElementById('user-agent').textContent = 'שגיאה';
+            }
+            
+            // 5. סיום מצב טעינה
+            document.getElementById('public-ip-v4').classList.remove('animate-pulse');
+            document.getElementById('refresh-button').disabled = false;
+        }
+
+        /**
+         * פונקציה להצגה או הסתרה של אזור מונחי הרשת
+         */
+        function toggleGlossary() {
+            const content = document.getElementById('glossary-content');
+            const arrow = document.getElementById('glossary-arrow');
+            
+            if (content.classList.contains('hidden')) {
+                // מציג
+                content.classList.remove('hidden');
+                // קביעת גובה מקסימלי לגובה התוכן בפועל כדי לאפשר מעבר חלק
+                content.style.maxHeight = content.scrollHeight + "px";
+                arrow.classList.add('rotate-180');
+            } else {
+                // מסתיר - משתמשים ב-setTimeout קצר כדי לאפשר למעבר לפעול
+                content.style.maxHeight = content.scrollHeight + "px"; 
+                setTimeout(() => {
+                    content.style.maxHeight = '0';
+                    setTimeout(() => {
+                        content.classList.add('hidden');
+                    }, 500); // 500ms להתאמה ל-transition
+                }, 10); 
+                arrow.classList.remove('rotate-180');
+            }
+        }
+        
+        /**
+         * פונקציה להצגת מדריך ספציפי (Windows או Mac)
+         * @param {string} platform - 'win' או 'mac'
+         */
+        function showGuide(platform) {
+            const guides = document.querySelectorAll('.guide-content');
+            const tabs = document.querySelectorAll('#tab-win, #tab-mac');
+            
+            // הסתרת כל המדריכים ואיפוס כל הכרטיסיות
+            guides.forEach(g => g.style.display = 'none');
+            tabs.forEach(t => {
+                t.classList.remove('tab-active');
+                t.classList.add('text-text-light/70');
+            });
+            
+            // הצגת המדריך הרצוי וסימון הכרטיסייה הפעילה
+            const activeGuide = document.getElementById(`${platform}-guide`);
+            activeGuide.style.display = 'grid'; 
+            
+            const activeTab = document.getElementById(`tab-${platform}`);
+            activeTab.classList.add('tab-active');
+            activeTab.classList.remove('text-text-light/70');
+        }
+
+
+        // טוען רק את המידע הסטטי (IP, מיקום, פרטי דפדפן) כשהדף נטען
+        window.onload = function() {
+            loadNetworkInfo();
+            showGuide('win'); // מציג את מדריך Windows כברירת מחדל
+        }
+    </script>
+</body>
+</html>
